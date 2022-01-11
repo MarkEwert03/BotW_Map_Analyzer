@@ -6,7 +6,7 @@ PImage map;
 void setup() {
   //initial setup
   size(250, 200);
-  map = loadImage("test small.png");
+  map = loadImage("Pin Corner.png");
   map.loadPixels();
   image(map, 0, 0, 250, 200);
   
@@ -139,9 +139,12 @@ String pixelCheck(color[][] minimap) {
   return output;
 }//pixelCheck -------------------------------------------------------------------------------------------------
 
-boolean cMatch(color one, color two) {
+boolean cMatch(color reference, color toCompare) {
   //basic match for initial testing
-  return hex(one).equals(hex(two));
+  //return hex(reference).equals(hex(toCompare));
+  
+  //advanced match for map images
+  return red(reference) >= 200;
 }//cMatch -------------------------------------------------------------------------------------------------
 
 void print2DArray(color[][] arr) {
