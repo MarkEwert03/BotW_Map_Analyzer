@@ -3,21 +3,22 @@
 import java.util.*;
 PImage map;
 color red = #FF0000;
-color blue = #0000FF;
+color blue = #5e619a;
 
 void setup() {
   //initial setup
   size(500, 400);
   colorMode(HSB);
-  map = loadImage("medium pin.png");
+  map = loadImage("medium blue pin.png");
   map.loadPixels();
   image(map, 0, 0, width, height);
 
   //specific test
   color[][] pixelMap = arrayConvert(map.pixels); //index[#y down][#x right]
+  print2DArray(pixelMap);
 
   //for-loop at the ready
-  for (int r = 1; r < pixelMap.length-1; r++) {
+  /*for (int r = 1; r < pixelMap.length-1; r++) {
     for (int c = 1; c < pixelMap[0].length-1; c++) {
       String thisPixel = pixelCheckPin(minimapExtract(pixelMap, r, c));
       if (thisPixel.equals("top-right")) {
@@ -25,10 +26,9 @@ void setup() {
       } else if (thisPixel.equals("bottom-left")){
         println("bottom left corner @ (" + c + ", " + r + ")");
       }
- 
     }
   }
-  println("done");
+  println("done");*/
 }//setup -------------------------------------------------------------------------------------------------
 
 color[][] arrayConvert(color[] flatMap) {
@@ -161,10 +161,12 @@ String pixelCheckPin(color[][] minimap) {
   String output = "";
 
   //creates 2D boolean array from minimap data
-  boolean[][] surroundings = new boolean[3][3];
+  boolean[][] redSurroundings = new boolean[3][3];
+  boolean[][] blueSurrounding = new boolean[3][3];
   for (int r = 0; r < 3; r++) {
     for (int c = 0; c < 3; c++) {
-      surroundings[r][c] = cMatch(minimap[1][1], minimap[r][c]);
+      redSurroundings[r][c] = cMatch(minimap[1][1], minimap[r][c]);
+      //blueSurroundings[r][c] = cMatch(
     }
   }
 
@@ -172,8 +174,8 @@ String pixelCheckPin(color[][] minimap) {
   boolean[][] topRightCheck = {{true, false, false}, {true, true, false}, {true, true, true}};
   boolean[][] botLeftCheck  = {{true, true, true}, {false, true, true}, {false, false, true}};
 
-  if (Arrays.deepEquals(surroundings, topRightCheck)) output = "top-right";
-  else if (Arrays.deepEquals(surroundings, botLeftCheck)) output = "bottom-left";
+  if (Arrays.deepEquals(redSurroundings, topRightCheck)) output = "top-right";
+  else if (Arrays.deepEquals(redSurroundings, botLeftCheck)) output = "bottom-left";
   else output = "idk";
 
   return output;
@@ -185,8 +187,8 @@ boolean cMatch(color reference, color toCompare) {
 
   //advanced match for map images
   boolean withinHue = abs(hue(reference) - hue(toCompare)) < 10 || abs(hue(reference) - hue(toCompare)) > 250;
-  boolean withinSat = saturation(toCompare) < 190;
-  boolean withinBri = brightness(toCompare) > 210;
+  boolean withinSat = saturation(toCompare) < 175;
+  boolean withinBri = brightness(toCompare) > 225;
   return withinHue && withinSat && withinBri;
 }//cMatch -------------------------------------------------------------------------------------------------
 
@@ -194,7 +196,7 @@ void print2DArray(color[][] arr) {
   String text = "";
   for (color[] r : arr) {
     for (color c : r) {
-      text += (cMatch(#aa6d60, c) ? "0" : ".") + " ";
+      text += (cMatch(blue, c) ? "0" : ".") + " ";
     }
     text += "\n";
   }
