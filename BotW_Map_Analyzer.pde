@@ -7,23 +7,28 @@ color blue = #0000FF;
 
 void setup() {
   //initial setup
-  size(250, 200);
+  size(500, 400);
   colorMode(HSB);
-  map = loadImage("small pin.png");
+  map = loadImage("medium pin.png");
   map.loadPixels();
-  image(map, 0, 0, 250, 200);
+  image(map, 0, 0, width, height);
 
   //specific test
   color[][] pixelMap = arrayConvert(map.pixels); //index[#y down][#x right]
 
-
   //for-loop at the ready
   for (int r = 1; r < pixelMap.length-1; r++) {
     for (int c = 1; c < pixelMap[0].length-1; c++) {
-      print(pixelCheckPin(minimapExtract(pixelMap, r, c)) + " ");
+      String thisPixel = pixelCheckPin(minimapExtract(pixelMap, r, c));
+      if (thisPixel.equals("top-right")) {
+        println("top right corner @ (" + c + ", " + r + ")");
+      } else if (thisPixel.equals("bottom-left")){
+        println("bottom left corner @ (" + c + ", " + r + ")");
+      }
+ 
     }
-    println("");
   }
+  println("done");
 }//setup -------------------------------------------------------------------------------------------------
 
 color[][] arrayConvert(color[] flatMap) {
@@ -179,9 +184,9 @@ boolean cMatch(color reference, color toCompare) {
   //return hex(reference).equals(hex(toCompare));
 
   //advanced match for map images
-  boolean withinHue = abs(hue(reference) - hue(toCompare)) < 10 || abs(hue(reference) - hue(toCompare)) > 245;
-  boolean withinSat = saturation(toCompare) < 200;
-  boolean withinBri = brightness(toCompare) > 200;
+  boolean withinHue = abs(hue(reference) - hue(toCompare)) < 10 || abs(hue(reference) - hue(toCompare)) > 250;
+  boolean withinSat = saturation(toCompare) < 190;
+  boolean withinBri = brightness(toCompare) > 210;
   return withinHue && withinSat && withinBri;
 }//cMatch -------------------------------------------------------------------------------------------------
 
