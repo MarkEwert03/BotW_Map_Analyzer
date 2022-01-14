@@ -6,13 +6,22 @@ PImage map;
 void setup() {
   //initial setup
   size(250, 200);
+  colorMode(HSB);
   map = loadImage("Pin Corner.png");
   map.loadPixels();
   image(map, 0, 0, 250, 200);
-  
+
   //specific test
-  color[][] pixelMap2D = arrayConvert(map.pixels);
-  print2DArray(pixelMap2D);
+  color[][] pixelMap = arrayConvert(map.pixels); //index[#y down][#x right]
+  //print2DArray(pixelMap2D);
+  //printColorInfo(pixelMap[3][6], "normal");
+  
+  for (color[] row: pixelMap){
+    for (color c: row){
+      print((int)pRound(saturation(c), 0) + " ");
+    }
+    println("");
+  }
 }//setup -------------------------------------------------------------------------------------------------
 
 color[][] arrayConvert(color[] flatMap) {
@@ -76,9 +85,9 @@ double[] distanceData(color[][] pixelMap) {
 
   //error check min and max
   /*println("redMinCoordinates: x = " + redBottomLeft.x + ", y = " + redBottomLeft.y);
-  println("blueMinCoordinates: x = " + blueTopRight.x + ", y = " + blueTopRight.y);
-  println("redMaxCoordinates: x = " + redTopRight.x + ", y = " + redTopRight.y);
-  println("blueMaxCoordinates: x = " + blueBottomLeft.x + ", y = " + blueBottomLeft.y);*/
+   println("blueMinCoordinates: x = " + blueTopRight.x + ", y = " + blueTopRight.y);
+   println("redMaxCoordinates: x = " + redTopRight.x + ", y = " + redTopRight.y);
+   println("blueMaxCoordinates: x = " + blueBottomLeft.x + ", y = " + blueBottomLeft.y);*/
 
   //calculate and add average
   double average = (max + min)/2.0;
@@ -142,8 +151,10 @@ String pixelCheck(color[][] minimap) {
 boolean cMatch(color reference, color toCompare) {
   //basic match for initial testing
   //return hex(reference).equals(hex(toCompare));
-  
+
   //advanced match for map images
+  boolean withinSat = saturation(toCompare) < 200;
+  
   return red(reference) >= 200;
 }//cMatch -------------------------------------------------------------------------------------------------
 
@@ -157,3 +168,30 @@ void print2DArray(color[][] arr) {
   }
   print(text);
 }//print2DArray -------------------------------------------------------------------------------------------------
+
+void printColorInfo(color c, String mode) {
+  float h = hue(c);
+  float s = saturation(c);
+  float b = brightness(c);
+  String hex = hex(c).substring(2, 8);
+
+  if (mode.equals("normal")) {
+    h = pRound(h, 1);
+    s = pRound(s, 1);
+    b = pRound(b, 1);
+  } else if (mode.equals("gimp")) {
+    h = pRound(h*(360/255.0), 1);
+    s = pRound(s*(100/255.0), 1);
+    b = pRound(b*(100/255.0), 1);
+  } else {
+    println("Invalid mode! Use \"normal\" or \"gimp\"");
+    return;
+  }
+
+  println("hue: " + h + " sat: " + s + " bri: " + b + " hex: " + hex);
+}//printColorInfo -------------------------------------------------------------------------------------------------
+
+float pRound(float value, int precision) {
+  int scale = (int) Math.pow(10, precision);
+  return (float) Math.round(value * scale) / scale;
+}//pRound-------------------------------------------------------------------------------------------------
