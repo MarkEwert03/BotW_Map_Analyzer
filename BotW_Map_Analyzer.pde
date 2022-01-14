@@ -2,6 +2,8 @@
 
 import java.util.*;
 PImage map;
+color red = #FF0000;
+color blue = #0000FF;
 
 void setup() {
   //initial setup
@@ -13,15 +15,15 @@ void setup() {
 
   //specific test
   color[][] pixelMap = arrayConvert(map.pixels); //index[#y down][#x right]
-  //print2DArray(pixelMap2D);
+  print2DArray(pixelMap);
   //printColorInfo(pixelMap[3][6], "normal");
-  
-  for (color[] row: pixelMap){
-    for (color c: row){
-      print((int)pRound(saturation(c), 0) + " ");
+
+  /*for (color[] row : pixelMap) {
+    for (color c : row) {
+      print((int)pRound(hue(c), 0) + " ");
     }
     println("");
-  }
+  }*/
 }//setup -------------------------------------------------------------------------------------------------
 
 color[][] arrayConvert(color[] flatMap) {
@@ -153,16 +155,17 @@ boolean cMatch(color reference, color toCompare) {
   //return hex(reference).equals(hex(toCompare));
 
   //advanced match for map images
+  boolean withinHue = abs(hue(reference) - hue(toCompare)) < 10 || abs(hue(reference) - hue(toCompare)) > 245;
   boolean withinSat = saturation(toCompare) < 200;
-  
-  return red(reference) >= 200;
+  boolean withinBri = brightness(toCompare) > 200;
+  return withinHue && withinSat && withinBri;
 }//cMatch -------------------------------------------------------------------------------------------------
 
 void print2DArray(color[][] arr) {
   String text = "";
   for (color[] r : arr) {
     for (color c : r) {
-      text += (!cMatch(c, #000000) ? "0" : ".") + " ";
+      text += (cMatch(#aa6d60, c) ? "0" : ".") + " ";
     }
     text += "\n";
   }
