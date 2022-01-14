@@ -9,21 +9,21 @@ void setup() {
   //initial setup
   size(250, 200);
   colorMode(HSB);
-  map = loadImage("Pin Corner.png");
+  map = loadImage("small pin.png");
   map.loadPixels();
   image(map, 0, 0, 250, 200);
 
   //specific test
   color[][] pixelMap = arrayConvert(map.pixels); //index[#y down][#x right]
-  print2DArray(pixelMap);
-  //printColorInfo(pixelMap[3][6], "normal");
 
-  /*for (color[] row : pixelMap) {
-    for (color c : row) {
-      print((int)pRound(hue(c), 0) + " ");
+
+  //for-loop at the ready
+  for (int r = 1; r < pixelMap.length-1; r++) {
+    for (int c = 1; c < pixelMap[0].length-1; c++) {
+      print(pixelCheckPin(minimapExtract(pixelMap, r, c)) + " ");
     }
     println("");
-  }*/
+  }
 }//setup -------------------------------------------------------------------------------------------------
 
 color[][] arrayConvert(color[] flatMap) {
@@ -66,7 +66,7 @@ double[] distanceData(color[][] pixelMap) {
     for (int col = 1; col < pixelMap[0].length-1; col++) {
       //current pixel
       color currentColor = pixelMap[row][col];
-      String type = pixelCheck(minimapExtract(pixelMap, row, col));
+      String type = pixelCheckPin(minimapExtract(pixelMap, row, col));
 
       //min
       if (cMatch(currentColor, #FF0000) && type.equals("bottom-left")) redBottomLeft.set(col, row);
@@ -103,7 +103,7 @@ double[] distanceData(color[][] pixelMap) {
   return distanceDataArray;
 }//DistanceData -------------------------------------------------------------------------------------------------
 
-String pixelCheck(color[][] minimap) {
+String pixelCheckTest(color[][] minimap) {
   //error checking
   if (!(minimap.length == 3 && minimap[0].length == 3)) return "use a 3x3 2D color array";
 
@@ -149,6 +149,30 @@ String pixelCheck(color[][] minimap) {
 
   return output;
 }//pixelCheck -------------------------------------------------------------------------------------------------
+
+String pixelCheckPin(color[][] minimap) {
+  //error checking
+  if (!(minimap.length == 3 && minimap[0].length == 3)) return "use a 3x3 2D color array";
+  String output = "";
+
+  //creates 2D boolean array from minimap data
+  boolean[][] surroundings = new boolean[3][3];
+  for (int r = 0; r < 3; r++) {
+    for (int c = 0; c < 3; c++) {
+      surroundings[r][c] = cMatch(minimap[1][1], minimap[r][c]);
+    }
+  }
+
+  //creates both pre-known boolean 2D arrays to compare
+  boolean[][] topRightCheck = {{true, false, false}, {true, true, false}, {true, true, true}};
+  boolean[][] botLeftCheck  = {{true, true, true}, {false, true, true}, {false, false, true}};
+
+  if (Arrays.deepEquals(surroundings, topRightCheck)) output = "top-right";
+  else if (Arrays.deepEquals(surroundings, botLeftCheck)) output = "bottom-left";
+  else output = "idk";
+
+  return output;
+}//pixelCheckPin -------------------------------------------------------------------------------------------------
 
 boolean cMatch(color reference, color toCompare) {
   //basic match for initial testing
