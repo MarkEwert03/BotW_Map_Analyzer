@@ -3,34 +3,54 @@
 import java.util.*;
 PImage map;
 color red = #f78d77;
-color blue = #6a77ea;
+color blue = #a9aeff;
 
 void setup() {
   //initial setup
-  size(600, 500);
+  size(1280, 720);
   colorMode(HSB);
-  map = loadImage("big pin.jpg");
+  map = loadImage("Wiiu Test.jpg");
   map.loadPixels();
-  image(map, 0, 0, width, height);
+
 
   //specific test
   color[][] pixelMap = arrayConvert(map.pixels); //index[#y down][#x right]
   //print2DArray(pixelMap);
 
+  //create four PVectors to store coordinate pairs
+  PVector redTR = new PVector(0, map.height);
+  PVector redBL = new PVector(map.width, 0);
+  PVector blueTR = new PVector(0, map.height);
+  PVector blueBL = new PVector(map.width, 0);
+
   //for-loop at the ready
   for (int r = 1; r < pixelMap.length-1; r++) {
     for (int c = 1; c < pixelMap[0].length-1; c++) {
+      //creates variables to use 
       color[][] minimap = minimapExtract(pixelMap, r, c);
       String thisPixel = pixelCheckPin(minimap);
       String col = cMatch(minimap[1][1], red) ? "red" : cMatch(minimap[1][1], blue) ? "blue" : "misc";
+      PVector check = new PVector(c, r);
+
+      //prints information to console and assigns coordinate information to PVectors
       if (thisPixel.equals("top-right")) {
         println(col + " top right corner @ (" + c + ", " + r + ")");
-      } else if (thisPixel.equals("bottom-left")){
+        if (col.equals("red") && check.x > redTR.x && check.y < redTR.y) redTR.set(check.x, check.y);
+        if (col.equals("blue") && check.x > blueTR.x && check.y < blueTR.y) blueTR.set(check.x, check.y);
+      } else if (thisPixel.equals("bottom-left")) {
         println(col + " bottom left corner @ (" + c + ", " + r + ")");
+        if (col.equals("red") && check.x < redBL.x && check.y > redBL.y) redBL.set(check.x, check.y);
+        if (col.equals("blue") && check.x < blueBL.x && check.y > blueBL.y) blueBL.set(check.x, check.y);
       }
     }
   }
-  println("done");
+
+  println(redTR);
+  println(redBL);
+  println(blueTR);
+  println(blueBL);
+  
+  image(printPinRects(pixelMap,redTR,redBL,blueTR,blueBL), 0, 0);
 }//setup -------------------------------------------------------------------------------------------------
 
 color[][] arrayConvert(color[] flatMap) {
@@ -142,8 +162,8 @@ boolean cMatch(color reference, color toCompare) {
 
   //advanced match for map images
   boolean withinHue = abs(hue(reference) - hue(toCompare)) < 20 || abs(hue(reference) - hue(toCompare)) > 240;
-  boolean withinSat = abs(saturation(reference) - saturation(toCompare)) < 65;
-  boolean withinBri = abs(brightness(reference) - brightness(toCompare)) < 35;
+  boolean withinSat = abs(saturation(reference) - saturation(toCompare)) < 70;
+  boolean withinBri = abs(brightness(reference) - brightness(toCompare)) < 40;
   return withinHue && withinSat && withinBri;
 }//cMatch -------------------------------------------------------------------------------------------------
 
@@ -158,6 +178,21 @@ void print2DArray(color[][] arr) {
   }
   print(text);
 }//print2DArray -------------------------------------------------------------------------------------------------
+
+PImage printPinRects(color[][] pixelMap, PVector redTR, PVector redBL, PVector blueTR, PVector blueBL) {
+  PImage algoView = createImage(map.width, map.height, HSB);
+  algoView.loadPixels();
+  for (int r = 0; r < pixelMap.length; r++) {
+    for (int c = 0; c < pixelMap[0].length; c++) {
+      color currentPixelColor = pixelMap[r][c];
+      currentPixelColor = color(hue(currentPixelColor), saturation(currentPixelColor)/3, brightness(currentPixelColor)/3);
+      if (redBL.x <= c && c <= redTR.x && redTR.y <= r && r <= redBL.y) currentPixelColor = red;
+      if (blueBL.x <= c && c <= blueTR.x && blueTR.y <= r && r <= blueBL.y) currentPixelColor = blue;
+      algoView.pixels[r*pixelMap[0].length+c] = currentPixelColor;
+    }
+  }
+  return algoView;
+}//printPinRects -------------------------------------------------------------------------------------------------
 
 void printColorInfo(color c, String mode) {
   float h = hue(c);
