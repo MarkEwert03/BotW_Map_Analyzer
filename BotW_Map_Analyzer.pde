@@ -2,14 +2,14 @@
 
 import java.util.*;
 PImage map;
-color red = #FF0000;
+color red = #f78d77;
 color blue = #6a77ea;
 
 void setup() {
   //initial setup
-  size(400, 500);
+  size(600, 500);
   colorMode(HSB);
-  map = loadImage("medium blue pin.png");
+  map = loadImage("big pin.jpg");
   map.loadPixels();
   image(map, 0, 0, width, height);
 
@@ -110,6 +110,82 @@ double[] distanceData(color[][] pixelMap) {
   return distanceDataArray;
 }//DistanceData -------------------------------------------------------------------------------------------------
 
+String pixelCheckPin(color[][] minimap) {
+  //error checking
+  if (!(minimap.length == 3 && minimap[0].length == 3)) return "use a 3x3 2D color array";
+  color colorToUse = cMatch(minimap[1][1], red) ? red : cMatch(minimap[1][1], blue) ? blue : #000000;
+  if (colorToUse == #000000) return "not red or blue";
+  String output = "";
+
+  //creates 2D boolean array from minimap data
+  boolean[][] colorSurroundings = new boolean[3][3];
+  for (int r = 0; r < 3; r++) {
+    for (int c = 0; c < 3; c++) {
+      colorSurroundings[r][c] = cMatch(colorToUse, minimap[r][c]);
+    }
+  }
+
+  //creates both pre-known boolean 2D arrays to compare
+  boolean[][] topRightCheck = {{true, false, false}, {true, true, false}, {true, true, true}};
+  boolean[][] botLeftCheck  = {{true, true, true}, {false, true, true}, {false, false, true}};
+
+  if (Arrays.deepEquals(colorSurroundings, topRightCheck)) output = "top-right";
+  else if (Arrays.deepEquals(colorSurroundings, botLeftCheck)) output = "bottom-left";
+  else output = "idk";
+
+  return output;
+}//pixelCheckPin -------------------------------------------------------------------------------------------------
+
+boolean cMatch(color reference, color toCompare) {
+  //basic match for initial testing
+  //return hex(reference).equals(hex(toCompare));
+
+  //advanced match for map images
+  boolean withinHue = abs(hue(reference) - hue(toCompare)) < 20 || abs(hue(reference) - hue(toCompare)) > 240;
+  boolean withinSat = abs(saturation(reference) - saturation(toCompare)) < 65;
+  boolean withinBri = abs(brightness(reference) - brightness(toCompare)) < 35;
+  return withinHue && withinSat && withinBri;
+}//cMatch -------------------------------------------------------------------------------------------------
+
+void print2DArray(color[][] arr) {
+  String text = "";
+  for (color[] r : arr) {
+    for (color c : r) {
+      //switch between red and blue
+      text += (cMatch(blue, c) ? "0" : ".") + " ";
+    }
+    text += "\n";
+  }
+  print(text);
+}//print2DArray -------------------------------------------------------------------------------------------------
+
+void printColorInfo(color c, String mode) {
+  float h = hue(c);
+  float s = saturation(c);
+  float b = brightness(c);
+  String hex = hex(c).substring(2, 8);
+
+  if (mode.equals("normal")) {
+    h = pRound(h, 1);
+    s = pRound(s, 1);
+    b = pRound(b, 1);
+  } else if (mode.equals("gimp")) {
+    h = pRound(h*(360/255.0), 1);
+    s = pRound(s*(100/255.0), 1);
+    b = pRound(b*(100/255.0), 1);
+  } else {
+    println("Invalid mode! Use \"normal\" or \"gimp\"");
+    return;
+  }
+
+  println("hue: " + h + " sat: " + s + " bri: " + b + " hex: " + hex);
+}//printColorInfo -------------------------------------------------------------------------------------------------
+
+float pRound(float value, int precision) {
+  int scale = (int) Math.pow(10, precision);
+  return (float) Math.round(value * scale) / scale;
+}//pRound-------------------------------------------------------------------------------------------------
+
 String pixelCheckTest(color[][] minimap) {
   //error checking
   if (!(minimap.length == 3 && minimap[0].length == 3)) return "use a 3x3 2D color array";
@@ -156,78 +232,3 @@ String pixelCheckTest(color[][] minimap) {
 
   return output;
 }//pixelCheck -------------------------------------------------------------------------------------------------
-
-String pixelCheckPin(color[][] minimap) {
-  //error checking
-  if (!(minimap.length == 3 && minimap[0].length == 3)) return "use a 3x3 2D color array";
-  color colorToUse = cMatch(minimap[1][1], red) ? red : cMatch(minimap[1][1], blue) ? blue : #000000;
-  if (colorToUse == #000000) return "not red or blue";
-  String output = "";
-
-  //creates 2D boolean array from minimap data
-  boolean[][] colorSurroundings = new boolean[3][3];
-  for (int r = 0; r < 3; r++) {
-    for (int c = 0; c < 3; c++) {
-      colorSurroundings[r][c] = cMatch(colorToUse, minimap[r][c]);
-    }
-  }
-
-  //creates both pre-known boolean 2D arrays to compare
-  boolean[][] topRightCheck = {{true, false, false}, {true, true, false}, {true, true, true}};
-  boolean[][] botLeftCheck  = {{true, true, true}, {false, true, true}, {false, false, true}};
-
-  if (Arrays.deepEquals(colorSurroundings, topRightCheck)) output = "top-right";
-  else if (Arrays.deepEquals(colorSurroundings, botLeftCheck)) output = "bottom-left";
-  else output = "idk";
-
-  return output;
-}//pixelCheckPin -------------------------------------------------------------------------------------------------
-
-boolean cMatch(color reference, color toCompare) {
-  //basic match for initial testing
-  //return hex(reference).equals(hex(toCompare));
-
-  //advanced match for map images
-  boolean withinHue = abs(hue(reference) - hue(toCompare)) < 20 || abs(hue(reference) - hue(toCompare)) > 240;
-  boolean withinSat = abs(saturation(reference) - saturation(toCompare)) < 50;
-  boolean withinBri = abs(brightness(reference) - brightness(toCompare)) < 35;
-  return withinHue && withinSat && withinBri;
-}//cMatch -------------------------------------------------------------------------------------------------
-
-void print2DArray(color[][] arr) {
-  String text = "";
-  for (color[] r : arr) {
-    for (color c : r) {
-      text += (cMatch(blue, c) ? "0" : ".") + " ";
-    }
-    text += "\n";
-  }
-  print(text);
-}//print2DArray -------------------------------------------------------------------------------------------------
-
-void printColorInfo(color c, String mode) {
-  float h = hue(c);
-  float s = saturation(c);
-  float b = brightness(c);
-  String hex = hex(c).substring(2, 8);
-
-  if (mode.equals("normal")) {
-    h = pRound(h, 1);
-    s = pRound(s, 1);
-    b = pRound(b, 1);
-  } else if (mode.equals("gimp")) {
-    h = pRound(h*(360/255.0), 1);
-    s = pRound(s*(100/255.0), 1);
-    b = pRound(b*(100/255.0), 1);
-  } else {
-    println("Invalid mode! Use \"normal\" or \"gimp\"");
-    return;
-  }
-
-  println("hue: " + h + " sat: " + s + " bri: " + b + " hex: " + hex);
-}//printColorInfo -------------------------------------------------------------------------------------------------
-
-float pRound(float value, int precision) {
-  int scale = (int) Math.pow(10, precision);
-  return (float) Math.round(value * scale) / scale;
-}//pRound-------------------------------------------------------------------------------------------------
