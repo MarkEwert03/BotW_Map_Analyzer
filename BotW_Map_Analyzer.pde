@@ -3,7 +3,7 @@
 import java.util.*;
 PImage map;
 color red = #FF0000;
-color blue = #7a86f2;
+color blue = #6a77ea;
 
 void setup() {
   //initial setup
@@ -15,15 +15,18 @@ void setup() {
 
   //specific test
   color[][] pixelMap = arrayConvert(map.pixels); //index[#y down][#x right]
+  //print2DArray(pixelMap);
 
   //for-loop at the ready
   for (int r = 1; r < pixelMap.length-1; r++) {
     for (int c = 1; c < pixelMap[0].length-1; c++) {
-      String thisPixel = pixelCheckPin(minimapExtract(pixelMap, r, c));
+      color[][] minimap = minimapExtract(pixelMap, r, c);
+      String thisPixel = pixelCheckPin(minimap);
+      String col = cMatch(minimap[1][1], red) ? "red" : cMatch(minimap[1][1], blue) ? "blue" : "misc";
       if (thisPixel.equals("top-right")) {
-        println("top right corner @ (" + c + ", " + r + ")");
+        println(col + " top right corner @ (" + c + ", " + r + ")");
       } else if (thisPixel.equals("bottom-left")){
-        println("bottom left corner @ (" + c + ", " + r + ")");
+        println(col + " bottom left corner @ (" + c + ", " + r + ")");
       }
     }
   }
@@ -185,9 +188,9 @@ boolean cMatch(color reference, color toCompare) {
   //return hex(reference).equals(hex(toCompare));
 
   //advanced match for map images
-  boolean withinHue = abs(hue(reference) - hue(toCompare)) < 10 || abs(hue(reference) - hue(toCompare)) > 250;
-  boolean withinSat = saturation(toCompare) < 170;
-  boolean withinBri = brightness(toCompare) > 230;
+  boolean withinHue = abs(hue(reference) - hue(toCompare)) < 20 || abs(hue(reference) - hue(toCompare)) > 240;
+  boolean withinSat = abs(saturation(reference) - saturation(toCompare)) < 50;
+  boolean withinBri = abs(brightness(reference) - brightness(toCompare)) < 35;
   return withinHue && withinSat && withinBri;
 }//cMatch -------------------------------------------------------------------------------------------------
 
