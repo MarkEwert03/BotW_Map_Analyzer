@@ -3,13 +3,13 @@
 import java.util.*;
 PImage map;
 color red = #f78d77;
-color blue = #a9aeff;
+color blue = #9eaefc;
 
 void setup() {
   //initial setup
   size(1280, 720);
   colorMode(HSB);
-  map = loadImage("Wiiu Test.jpg");
+  map = loadImage("Switch Test.jpg");
   map.loadPixels();
 
 
@@ -34,23 +34,24 @@ void setup() {
 
       //prints information to console and assigns coordinate information to PVectors
       if (thisPixel.equals("top-right")) {
-        println(col + " top right corner @ (" + c + ", " + r + ")");
+        //println("FOUND! " + col + " top right @ (" + c + ", " + r + ")");
         if (col.equals("red") && check.x > redTR.x && check.y < redTR.y) redTR.set(check.x, check.y);
         if (col.equals("blue") && check.x > blueTR.x && check.y < blueTR.y) blueTR.set(check.x, check.y);
       } else if (thisPixel.equals("bottom-left")) {
-        println(col + " bottom left corner @ (" + c + ", " + r + ")");
+        //println("FOUND! " + col + " bottom left @ (" + c + ", " + r + ")");
         if (col.equals("red") && check.x < redBL.x && check.y > redBL.y) redBL.set(check.x, check.y);
         if (col.equals("blue") && check.x < blueBL.x && check.y > blueBL.y) blueBL.set(check.x, check.y);
       }
     }
   }
 
-  println(redTR);
-  println(redBL);
-  println(blueTR);
-  println(blueBL);
-  
-  image(printPinRects(pixelMap,redTR,redBL,blueTR,blueBL), 0, 0);
+  printCoordinate("Red top right", redTR);
+  printCoordinate("Red bottom left", redBL);
+  printCoordinate("Blue top right", blueTR);
+  printCoordinate("Blue bottom left", blueBL);
+  printData(distanceData(redTR, redBL, blueTR, blueBL));
+
+  image(printPinRects(pixelMap, redTR, redBL, blueTR, blueBL), 0, 0);
 }//setup -------------------------------------------------------------------------------------------------
 
 color[][] arrayConvert(color[] flatMap) {
@@ -79,56 +80,6 @@ color[][] minimapExtract(color[][] bigMap, int centerRow, int centerCol) {
     {bigMap[centerRow+1][centerCol-1], bigMap[centerRow+1][centerCol], bigMap[centerRow+1][centerCol+1]}
   };
 }//3x3Extract -------------------------------------------------------------------------------------------------
-
-double[] distanceData(color[][] pixelMap) {
-  //red should be above and to right of blue
-  double[] distanceDataArray = new double[4]; //[0] = min distance, [1] = max distance
-  PVector redBottomLeft = new PVector();
-  PVector blueTopRight = new PVector();
-  PVector redTopRight = new PVector();
-  PVector blueBottomLeft = new PVector();
-
-  //loops through pixel map
-  for (int row = 1; row < pixelMap.length-1; row++) {
-    for (int col = 1; col < pixelMap[0].length-1; col++) {
-      //current pixel
-      color currentColor = pixelMap[row][col];
-      String type = pixelCheckPin(minimapExtract(pixelMap, row, col));
-
-      //min
-      if (cMatch(currentColor, #FF0000) && type.equals("bottom-left")) redBottomLeft.set(col, row);
-      if (cMatch(currentColor, #0000FF) && type.equals("top-right")) blueTopRight.set(col, row);
-
-      //max
-      if (cMatch(currentColor, #FF0000) && type.equals("top-right")) redTopRight.set(col, row);
-      if (cMatch(currentColor, #0000FF) && type.equals("bottom-left")) blueBottomLeft.set(col, row);
-    }
-  }
-  //add min
-  double min = sqrt(pow(redBottomLeft.x-blueTopRight.x, 2) + pow(redBottomLeft.y-blueTopRight.y, 2));
-  distanceDataArray[0] = min;
-
-  //add max
-  double max = sqrt(pow(redTopRight.x-blueBottomLeft.x, 2) + pow(redTopRight.y-blueBottomLeft.y, 2));
-  distanceDataArray[1] = max;
-
-  //error check min and max
-  /*println("redMinCoordinates: x = " + redBottomLeft.x + ", y = " + redBottomLeft.y);
-   println("blueMinCoordinates: x = " + blueTopRight.x + ", y = " + blueTopRight.y);
-   println("redMaxCoordinates: x = " + redTopRight.x + ", y = " + redTopRight.y);
-   println("blueMaxCoordinates: x = " + blueBottomLeft.x + ", y = " + blueBottomLeft.y);*/
-
-  //calculate and add average
-  double average = (max + min)/2.0;
-  distanceDataArray[2] = average;
-
-  //calculate and add error
-  double error = (max - average);
-  distanceDataArray[3] = error;
-
-  //return final array with indecies {min, max, average, error}
-  return distanceDataArray;
-}//DistanceData -------------------------------------------------------------------------------------------------
 
 String pixelCheckPin(color[][] minimap) {
   //error checking
@@ -167,6 +118,36 @@ boolean cMatch(color reference, color toCompare) {
   return withinHue && withinSat && withinBri;
 }//cMatch -------------------------------------------------------------------------------------------------
 
+float[] distanceData(PVector redTR, PVector redBL, PVector blueTR, PVector blueBL) {
+  //red should be above and to right of blue
+  float[] distanceDataArray = new float[4]; //[0] = min distance, [1] = max distance
+
+  //add min
+  float min = sqrt(pow(redBL.x-blueTR.x, 2) + pow(redBL.y-blueTR.y, 2));
+  distanceDataArray[0] = min;
+
+  //add max
+  float max = sqrt(pow(redTR.x-blueBL.x, 2) + pow(redTR.y-blueBL.y, 2));
+  distanceDataArray[1] = max;
+
+  //error check min and max
+  /*println("redMinCoordinates: x = " + redBottomLeft.x + ", y = " + redBottomLeft.y);
+   println("blueMinCoordinates: x = " + blueTopRight.x + ", y = " + blueTopRight.y);
+   println("redMaxCoordinates: x = " + redTopRight.x + ", y = " + redTopRight.y);
+   println("blueMaxCoordinates: x = " + blueBottomLeft.x + ", y = " + blueBottomLeft.y);*/
+
+  //calculate and add average
+  float average = (max + min)/2.0;
+  distanceDataArray[2] = average;
+
+  //calculate and add error
+  float error = (max - average);
+  distanceDataArray[3] = error;
+
+  //return final array with indecies {min, max, average, error}
+  return distanceDataArray;
+}//DistanceData -------------------------------------------------------------------------------------------------
+
 void print2DArray(color[][] arr) {
   String text = "";
   for (color[] r : arr) {
@@ -185,7 +166,7 @@ PImage printPinRects(color[][] pixelMap, PVector redTR, PVector redBL, PVector b
   for (int r = 0; r < pixelMap.length; r++) {
     for (int c = 0; c < pixelMap[0].length; c++) {
       color currentPixelColor = pixelMap[r][c];
-      currentPixelColor = color(hue(currentPixelColor), saturation(currentPixelColor)/3, brightness(currentPixelColor)/3);
+      currentPixelColor = color(hue(currentPixelColor), saturation(currentPixelColor)/2, brightness(currentPixelColor)/10);
       if (redBL.x <= c && c <= redTR.x && redTR.y <= r && r <= redBL.y) currentPixelColor = red;
       if (blueBL.x <= c && c <= blueTR.x && blueTR.y <= r && r <= blueBL.y) currentPixelColor = blue;
       algoView.pixels[r*pixelMap[0].length+c] = currentPixelColor;
@@ -215,6 +196,20 @@ void printColorInfo(color c, String mode) {
 
   println("hue: " + h + " sat: " + s + " bri: " + b + " hex: " + hex);
 }//printColorInfo -------------------------------------------------------------------------------------------------
+
+void printCoordinate(String text, PVector vec) {
+  int x = (int)vec.x;
+  int y = (int)vec.y;
+  println(text + " @ (" + x + ", " + y + ")");
+}//printColorInfo -------------------------------------------------------------------------------------------------
+
+void printData(float[] data) {
+  //data = {min, max, average, uncertainty)
+  println("min distance = " + pRound(data[0], 2) + "px");
+  println("max distance = " + pRound(data[1], 2) + "px");
+  println("avg distance = " + pRound(data[2], 2) + "px");
+  println("u[distance]  = " + pRound(data[3], 2) + "px");
+}//printData -------------------------------------------------------------------------------------------------
 
 float pRound(float value, int precision) {
   int scale = (int) Math.pow(10, precision);
